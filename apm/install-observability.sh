@@ -21,7 +21,23 @@ fi
 
 echo "✅ Instalando pacotes necessários..."
 $PM_UPDATE
-$PM_INSTALL git unzip autoconf build-essential pkg-config curl php php-cli php-dev php-pear phpize gcc make
+
+# Instalar apenas o que não está incluso na imagem php:8.x
+$PM_INSTALL git unzip autoconf build-essential pkg-config curl gcc make
+
+# Verificar se 'phpize' está disponível. Se não estiver, tenta instalar.
+if ! command -v phpize &> /dev/null; then
+  echo "⚠️ 'phpize' não encontrado. Instalando via gerenciador de pacotes..."
+  if command -v apt-get &> /dev/null; then
+    $PM_INSTALL php-dev php-pear
+  elif command -v yum &> /dev/null; then
+    $PM_INSTALL php-devel php-pear
+  elif command -v apk &> /dev/null; then
+    $PM_INSTALL php-dev php-pear
+  fi
+else
+  echo "✅ 'phpize' já está disponível no ambiente."
+fi
 
 # Composer já instalado?
 if ! command -v composer &> /dev/null; then
